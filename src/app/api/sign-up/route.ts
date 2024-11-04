@@ -1,15 +1,16 @@
 import { dbConnect } from "@/lib/dbConnect";
-import { NextRequest, NextResponse } from "next/server";
 import bcryptjs from "bcryptjs";
 import User from "@/models/User";
 import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
-import { ApiResponse } from "@/types/ApiResponse";
+import { NextResponse } from "next/server";
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
 	await dbConnect();
 	const otp = String(Math.floor(100000 + Math.random() * 900000));
+	const { email, password, username } = await req.json();
+	console.log(email, password, username);
+
 	try {
-		const { email, password, username } = await req.json();
 		const existingVerifiedUserByUsername = await User.findOne({
 			username,
 			isVerified: true,
@@ -17,29 +18,26 @@ export async function POST(req: NextRequest) {
 		if (existingVerifiedUserByUsername) {
 			return NextResponse.json(
 				{ success: false, message: "Username is already taken" },
-				{
-					status: 400,
-				}
+				{ status: 400 }
 			);
 		}
+
 		const userExistsByEmail = await User.findOne({ email });
 		if (userExistsByEmail) {
 			if (userExistsByEmail.isVerified) {
-                return NextResponse.json(
-                    { success: false, message: "User already exists with this Email" },
-                    {
-                        status: 400,
-                    }
-                );
-            }else{
-                const hashedPassword = await bcryptjs.hash(password, 10);
-                const expiryDate = new Date();
-                expiryDate.setHours(expiryDate.getHours() + 1);
-                userExistsByEmail.password = hashedPassword;
-                userExistsByEmail.verifyCode = otp;
-                userExistsByEmail.verifyCodeExpiry = expiryDate;
-                await userExistsByEmail.save();
-            }
+				return NextResponse.json(
+					{ success: false, message: "User already exists with this Email" },
+					{ status: 400 }
+				);
+			} else {
+				const hashedPassword = await bcryptjs.hash(password, 10);
+				const expiryDate = new Date();
+				expiryDate.setHours(expiryDate.getHours() + 1);
+				userExistsByEmail.password = hashedPassword;
+				userExistsByEmail.verifyCode = otp;
+				userExistsByEmail.verifyCodeExpiry = expiryDate;
+				await userExistsByEmail.save();
+			}
 		} else {
 			const hashedPassword = await bcryptjs.hash(password, 10);
 			const expiryDate = new Date();
@@ -56,28 +54,24 @@ export async function POST(req: NextRequest) {
 			});
 			await user.save();
 		}
+
 		const emailResponse = await sendVerificationEmail(email, username, otp);
 		if (!emailResponse.success) {
 			return NextResponse.json(
 				{ success: false, message: emailResponse.message },
-				{
-					status: 500,
-				}
+				{ status: 500 }
 			);
 		}
+
 		return NextResponse.json(
-			{ success: true, message: "User created successfully" },
-			{
-				status: 200,
-			}
+			{ success: true, message: "User created successfully please verify your email" },
+			{ status: 200 }
 		);
 	} catch (error) {
 		console.log("Error while signing up", error);
 		return NextResponse.json(
 			{ success: false, message: "Error while signing up" },
-			{
-				status: 500,
-			}
+			{ status: 500 }
 		);
 	}
 }
