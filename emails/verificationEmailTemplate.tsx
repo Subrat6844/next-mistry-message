@@ -52,6 +52,7 @@ import {
           </Row>
           <Row>
             <Button
+            className='mt-2 rounded-[8px] bg-indigo-600 p-[12px] font-semibold text-white'
               href={`http://localhost:3000/verify/${username}`}
               style={{ color: '#61dafb' }}
             >
