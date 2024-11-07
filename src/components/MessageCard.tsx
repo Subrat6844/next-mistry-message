@@ -75,7 +75,7 @@ export default function MessageCard({
 							<AlertDialogFooter>
 								<AlertDialogCancel>Cancel</AlertDialogCancel>
 								<AlertDialogAction onClick={handleDeleteConfirm}>
-									Continue
+									Delete
 								</AlertDialogAction>
 							</AlertDialogFooter>
 						</AlertDialogContent>
