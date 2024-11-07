@@ -34,6 +34,7 @@ export async function POST(req: Request) {
 				const expiryDate = new Date();
 				expiryDate.setHours(expiryDate.getHours() + 1);
 				userExistsByEmail.password = hashedPassword;
+				userExistsByEmail.username = username;
 				userExistsByEmail.verifyCode = otp;
 				userExistsByEmail.verifyCodeExpiry = expiryDate;
 				await userExistsByEmail.save();
@@ -56,6 +57,7 @@ export async function POST(req: Request) {
 		}
 
 		const emailResponse = await sendVerificationEmail(email, username, otp);
+		console.log("emailResponse", emailResponse);
 		if (!emailResponse.success) {
 			return NextResponse.json(
 				{ success: false, message: emailResponse.message },

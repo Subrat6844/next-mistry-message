@@ -1,3 +1,4 @@
+"use client";
 import MessageCard from "@/components/MessageCard";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -46,7 +47,7 @@ export default function page() {
 		} finally {
 			setIsSwitchLoading(false);
 		}
-	}, [setValue]);
+	}, [setValue,toast]);
 
 	const fetchMessages = useCallback(
 		async (refresh: boolean = false) => {
@@ -80,16 +81,16 @@ export default function page() {
 				setIsSwitchLoading(false);
 			}
 		},
-		[setIsLoading, setMessages]
+		[setIsLoading, setMessages,toast]
 	);
-
 	useEffect(() => {
 		if (!session || !session?.user) {
 			return;
 		}
-		fetchAcceptingMessage();
 		fetchMessages();
-	}, [session, setValue, fetchAcceptingMessage, fetchMessages]);
+		
+		fetchAcceptingMessage();
+	}, [setValue, toast, fetchAcceptingMessage, fetchMessages]);
 	const handleSwitchChange = async () => {
 		try {
 			const response = await axios.post<ApiResponse>("/api/accept-message", {
@@ -111,9 +112,9 @@ export default function page() {
 			});
 		}
 	};
-	const { username } = session?.user as User;
+	const user = session?.user as User;
 	const baseUrl = `${window.location.protocol}//${window.location.host}`;
-	const profileUrl = `${baseUrl}/u/${username}`;
+	const profileUrl = `${baseUrl}/u/${user?.username}`;
 	if (!session || !session?.user) {
 		return <div>Unauthorized : Please Login</div>;
 	}

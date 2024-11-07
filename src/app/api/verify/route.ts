@@ -19,6 +19,13 @@ export async function POST(request: NextRequest) {
 		if (isCodeValid && isCodeNotExpired) {
 			user.isVerified = true;
 			await user.save();
+			return NextResponse.json(
+				{
+					success: true,
+					message: "Email verified successfully",
+				},
+				{ status: 200 }
+			);
 		} else if (!isCodeNotExpired) {
 			return NextResponse.json(
 				{
